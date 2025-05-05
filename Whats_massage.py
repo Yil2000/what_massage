@@ -75,14 +75,3 @@ for i in range(group_count):
                     st.markdown(f"<span class='clicked-link'>{link}</span>", unsafe_allow_html=True)
                 else:
                     st.markdown(f"<span class='not-clicked-link'>{link}</span>", unsafe_allow_html=True)
-
-            with col2:
-                # אם לא נלחץ עדיין
-                if link not in st.session_state.clicked_links or not st.session_state.clicked_links[link]:
-                    if st.button(f"נלחץ", key=f"click_{i}_{idx}"):
-                        # עדכון הסטטוס של הקישור ל-"נשלח"
-                        st.session_state.clicked_links[link] = True
-                        st.experimental_rerun()  # ריענון הדף אחרי השינוי
-                    st.markdown("<span class='not-clicked-link'>לא נלחץ</span>", unsafe_allow_html=True)
-                else:
-                    st.markdown("<span class='clicked-link'>✔️ נשלח</span>", unsafe_allow_html=True)
