@@ -28,7 +28,7 @@ def is_valid_number(number):
     return bool(re.match(r"^05\d{8}$", number))  # תואם ל-10 ספרות שמתחילות ב-05
 
 for i in range(group_count):
-    st.header(f"קבוצה {i + 1} ✉️")
+    st.header(f"קבוצה {i + 1}")
 
     msg = st.text_area(f"הודעה לקבוצה {i + 1}", key=f"msg{i}")
     raw_numbers = st.text_area(f"מספרים לקבוצה {i + 1} (הכנס כל מספר בשורה נפרדת)", key=f"nums{i}")
@@ -61,7 +61,7 @@ for i in range(group_count):
             url = f"https://wa.me/{number}?text={msg.replace(' ', '%20')}"
             links.append(url)
 
-        st.subheader(f"קישורים לקבוצה {i + 1} :")
+        st.subheader(f"קישורים לקבוצה {i + 1}:")
 
         for idx, link in enumerate(links):
             col1, col2 = st.columns([8, 2])
@@ -72,6 +72,12 @@ for i in range(group_count):
                     st.markdown(f"<span class='not-clicked-link'>{link}</span>", unsafe_allow_html=True)
             with col2:
                 if link in st.session_state.clicked_links:
+                    # הצגת טקסט "נשלח" בצבע ירוק
                     st.markdown("<span class='clicked-link'>✔️ נשלח</span>", unsafe_allow_html=True)
                 else:
-                    st.markdown("<span class='not-clicked-link'>לא נלחץ</span>", unsafe_allow_html=True)
+                    # הצגת טקסט "לא נלחץ" בצבע אדום
+                    if st.session_state.get(f"clicked_{i}_{idx}", False):
+                        st.session_state.clicked_links.add(link)
+                        st.session_state[f"clicked_{i}_{idx}"] = True
+                        st.experimental_rerun()  # כדי שהתצוגה תתעדכן
+                    st.markdown("<span class='not-clicked-link'>לא לא נשלח</span>", unsafe_allow_html=True)
