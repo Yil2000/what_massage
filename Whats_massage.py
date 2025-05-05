@@ -26,10 +26,11 @@ for i in range(group_count):
     st.header(f"קבוצה {i + 1} ✉️")
 
     msg = st.text_area(f"הודעה לקבוצה {i + 1}", key=f"msg{i}")
-    raw_numbers = st.text_area(f"מספרים לקבוצה {i + 1} (מופרדים בפסיקים)", key=f"nums{i}")
+    raw_numbers = st.text_area(f"מספרים לקבוצה {i + 1} (הכנס כל מספר בשורה נפרדת)", key=f"nums{i}")
 
     if st.button(f"🚀 צור קישורים לשליחה", key=f"btn{i}"):
-        numbers = [num.strip().replace("-", "") for num in raw_numbers.split(",")]
+        # מחלקים את הקלט לשורות ומנקים רווחים
+        numbers = [num.strip().replace("-", "") for num in raw_numbers.splitlines() if num.strip()]
         links = []
         for number in numbers:
             if number.startswith("0"):
@@ -37,7 +38,7 @@ for i in range(group_count):
             url = f"https://wa.me/{number}?text={msg.replace(' ', '%20')}"
             links.append(url)
 
-        st.subheader(f"קישורים לקבוצה {i + 1} ✉️:")
+        st.subheader(f"קישורים לקבוצה {i + 1}:")
 
         for idx, link in enumerate(links):
             col1, col2 = st.columns([8, 2])
@@ -48,6 +49,6 @@ for i in range(group_count):
                     st.markdown(f"<span class='not-clicked-link'>{link}</span>", unsafe_allow_html=True)
             with col2:
                 if link in st.session_state.clicked_links:
-                    st.markdown("<span class='clicked-link'>✔️ נלחץ</span>", unsafe_allow_html=True)
+                    st.markdown("<span class='clicked-link'>✔️ נשלח</span>", unsafe_allow_html=True)
                 else:
-                    st.markdown("<span class='not-clicked-link'>לא נלחץ</span>", unsafe_allow_html=True)
+                    st.markdown("<span class='not-clicked-link'>לא נשלח</span>", unsafe_allow_html=True)
