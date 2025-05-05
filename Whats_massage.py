@@ -1,44 +1,83 @@
 import streamlit as st
 import urllib.parse
 
-st.set_page_config(page_title="שליחת וואטסאפ מותאמת", page_icon="📱")
-st.title("📤 שליחת הודעות וואטסאפ מותאמות אישית")
+st.set_page_config(page_title="שליחת הודעות וואטסאפ", page_icon="📱")
+st.title("📤 שליחת הודעות וואטסאפ מותאמות לקבוצות מספרים")
 
 st.markdown("""
-הכנס כל מספר טלפון והודעה בשורה נפרדת, כך:  
+**איך זה עובד:**  
+לכל קבוצת מספרים, תכניס:
+- הודעה אחת
+- כמה מספרים מופרדים בפסיקים
+
+ניתן להזין מספרים גם בפורמט ישראלי רגיל, כמו `0585665032` – והקוד יהפוך את זה אוטומטית ל־`+972585665032`.
+
+דוגמה:
 """)
 
-# טקסט הקלט מהמשתמש
-input_text = st.text_area("📋 מספרים והודעות", height=200, placeholder="+972501234567, שלום יוסי!")
 
-# זיכרון לקישורים שנלחצו
+# פונקציה להמרת מספר לפורמט בינלאומי
+def normalize_phone_number(num):
+    num = num.strip().replace("-", "").replace(" ", "")
+    if num.startswith("0") and len(num) == 10:
+        return "+972" + num[1:]
+    elif num.startswith("+") and len(num) > 8:
+        return num
+    else:
+        return None  # לא תקין
+
+
+# מספר קבוצות
+num_groups = st.number_input("🔢 כמה קבוצות הודעות תרצה להכניס?", min_value=1, max_value=20, value=1)
+
+# זיכרון להודעות שנשלחו
 if "sent_links" not in st.session_state:
     st.session_state.sent_links = set()
 
-# כפתור יצירת קישורים
-if st.button("🚀 צור קישורים לשליחה"):
-    if not input_text.strip():
-        st.warning("אנא הזן מספרים והודעות.")
-    else:
-        lines = input_text.strip().split("\n")
-        st.subheader("קישורים לשליחה:")
+if "messages_data" not in st.session_state:
+    st.session_state.messages_data = [{} for _ in range(num_groups)]
 
-        for idx, line in enumerate(lines):
+# טפסים להזנה
+for i in range(num_groups):
+    st.markdown(f"### ✉️ קבוצה {i + 1}")
+    msg = st.text_area(f"הודעה לקבוצה {i + 1}", key=f"msg_{i}")
+    numbers = st.text_area(f"מספרים לקבוצה {i + 1} (מופרדים בפסיקים)", key=f"nums_{i}")
+    st.session_state.messages_data[i] = {"message": msg, "numbers": numbers}
+
+st.markdown("---")
+
+# יצירת הקישורים
+if st.button("🚀 צור קישורים לשליחה"):
+    for i, data in enumerate(st.session_state.messages_data):
+        message = data["message"].strip()
+        raw_numbers = data["numbers"].strip()
+
+        if not message or not raw_numbers:
+            st.warning(f"⛔ קבוצה {i + 1} לא מלאה – דלג.")
+            continue
+
+        numbers_list = [num.strip() for num in raw_numbers.split(",") if num.strip()]
+        st.subheader(f"📨 קישורים לקבוצה {i + 1}:")
+
+        for number in numbers_list:
             try:
-                number, message = line.strip().split(",", 1)
-                number = number.strip()
-                message = message.strip()
+                normalized = normalize_phone_number(number)
+                if not normalized:
+                    st.error(f"❌ מספר לא תקין: {number}")
+                    continue
+
                 msg_encoded = urllib.parse.quote(message)
-                wa_url = f"https://wa.me/{number}?text={msg_encoded}"
-                link_id = f"{number}_{idx}"
+                wa_url = f"https://wa.me/{normalized}?text={msg_encoded}"
+                link_id = f"{normalized}_{i}"
 
                 col1, col2 = st.columns([3, 2])
 
                 if link_id in st.session_state.sent_links:
-                    col1.success(f"✔️ כבר נשלח ל־{number}")
+                    col1.success(f"✔️ כבר נשלח ל־{normalized}")
                 else:
-                    if col2.button(f"שלח ל־{number}", key=link_id):
+                    if col2.button(f"שלח ל־{normalized}", key=link_id):
                         st.session_state.sent_links.add(link_id)
-                        st.success(f"💬 שלח ל־{number} — [לחץ כאן לשליחה >>]({wa_url})", icon="📱")
+                        st.success(f"💬 שלח ל־{normalized} — [שליחה >>]({wa_url})", icon="📱")
+
             except Exception as e:
-                st.error(f"שורה לא תקינה: {line}")
+                st.error(f"שגיאה עם המספר {number}: {e}")
