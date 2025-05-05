@@ -4,15 +4,13 @@ import re
 st.set_page_config(page_title="שליחת WhatsApp", page_icon="✉️")
 st.title("שליחת הודעות WhatsApp")
 
-group_count = st.number_input("כמה קבוצות הודעות תרצה להכין?", min_value=1, max_value=10, value=1)
-
-# נאתחל את מצב הקישורים שנלחצו
-if "clicked_links" not in st.session_state:
-    st.session_state.clicked_links = set()
-
-# הגדרת CSS לצבעים שונים ולשינויים במצב
+# הגדרת CSS להפיכת האתר מימין לשמאל
 st.markdown("""
     <style>
+        body {
+            direction: rtl;
+            text-align: right;
+        }
         .clicked-link {
             color: green;
             font-weight: bold;
@@ -22,6 +20,12 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
+
+group_count = st.number_input("כמה קבוצות הודעות תרצה להכין?", min_value=1, max_value=10, value=1)
+
+# נאתחל את מצב הקישורים שנלחצו
+if "clicked_links" not in st.session_state:
+    st.session_state.clicked_links = set()
 
 # פונקציה לבדוק אם המספר תקין
 def is_valid_number(number):
@@ -80,4 +84,4 @@ for i in range(group_count):
                         st.session_state.clicked_links.add(link)
                         st.session_state[f"clicked_{i}_{idx}"] = True
                         st.experimental_rerun()  # כדי שהתצוגה תתעדכן
-                    st.markdown("<span class='not-clicked-link'>לא לא נשלח</span>", unsafe_allow_html=True)
+                    st.markdown("<span class='not-clicked-link'>לא נשלח</span>", unsafe_allow_html=True)
