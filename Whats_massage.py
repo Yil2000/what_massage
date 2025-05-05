@@ -13,7 +13,7 @@ for i in range(group_count):
     st.header(f"קבוצה {i + 1} ")
 
     msg = st.text_area(f"הודעה לקבוצה {i + 1}", key=f"msg{i}")
-    raw_numbers = st.text_area(f"מספרטי טלפון (בפורמט 0500000000, 0500000000 {i + 1}", key=f"nums{i}")
+    raw_numbers = st.text_area(f"מספרי טלפון (בפורמט 0500000000) ומופרדים בפסיקים {i + 1}", key=f"nums{i}")
 
     if st.button(f"🚀 צור קישורים לשליחה", key=f"btn{i}"):
         numbers = [num.strip().replace("-", "") for num in raw_numbers.split(",")]
