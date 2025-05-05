@@ -67,4 +67,5 @@ if st.button("🚀 צור קישורים לשליחה"):
                 st.error(f"❌ מספר לא תקין: {number}")
                 continue
 
-            msg_encoded = urllib.parse_
+            msg_encoded = urllib.parse.quote(message)
+            wa_url = f"https://wa.me/{normalized}?text={msg_encoded}"
