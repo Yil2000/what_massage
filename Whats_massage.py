@@ -4,7 +4,7 @@ import re
 st.set_page_config(page_title="שליחת WhatsApp", page_icon="✉️")
 st.title("שליחת הודעות WhatsApp")
 
-# הגדרת CSS להפיכת האתר מימין לשמאל
+# הגדרת CSS להפוך את האתר מימין לשמאל
 st.markdown("""
     <style>
         body {
@@ -21,15 +21,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-group_count = st.number_input("כמה קבוצות הודעות תרצה להכין?", min_value=1, max_value=10, value=1)
-
-# נאתחל את מצב הקישורים שנלחצו
-if "clicked_links" not in st.session_state:
-    st.session_state.clicked_links = set()
-
-# פונקציה לבדוק אם המספר תקין
+# הגדרת פונקציה לבדוק אם המספר תקין
 def is_valid_number(number):
     return bool(re.match(r"^05\d{8}$", number))  # תואם ל-10 ספרות שמתחילות ב-05
+
+group_count = st.number_input("כמה קבוצות הודעות תרצה להכין?", min_value=1, max_value=10, value=1)
+
+# נאתחל את מצב הקישורים שנלחצו אם הוא לא קיים
+if "clicked_links" not in st.session_state:
+    st.session_state.clicked_links = {}
 
 for i in range(group_count):
     st.header(f"קבוצה {i + 1}")
@@ -70,18 +70,19 @@ for i in range(group_count):
         for idx, link in enumerate(links):
             col1, col2 = st.columns([8, 2])
             with col1:
-                if link in st.session_state.clicked_links:
+                # הצגת הקישור עם סטטוס "נשלח" או "לא נלחץ"
+                if link in st.session_state.clicked_links and st.session_state.clicked_links[link]:
                     st.markdown(f"<span class='clicked-link'>{link}</span>", unsafe_allow_html=True)
                 else:
                     st.markdown(f"<span class='not-clicked-link'>{link}</span>", unsafe_allow_html=True)
+
             with col2:
-                if link in st.session_state.clicked_links:
-                    # הצגת טקסט "נשלח" בצבע ירוק
+                # הצגת כפתור שמעדכן את הסטטוס של הקישור
+                if link in st.session_state.clicked_links and st.session_state.clicked_links[link]:
                     st.markdown("<span class='clicked-link'>✔️ נשלח</span>", unsafe_allow_html=True)
                 else:
-                    # הצגת טקסט "לא נלחץ" בצבע אדום
-                    if st.session_state.get(f"clicked_{i}_{idx}", False):
-                        st.session_state.clicked_links.add(link)
-                        st.session_state[f"clicked_{i}_{idx}"] = True
-                        st.experimental_rerun()  # כדי שהתצוגה תתעדכן
-                    st.markdown("<span class='not-clicked-link'>לא נשלח</span>", unsafe_allow_html=True)
+                    if st.button(f"נלחץ", key=f"click_{i}_{idx}"):
+                        # עדכון הסטטוס של הקישור ל-"נשלח"
+                        st.session_state.clicked_links[link] = True
+                        st.experimental_rerun()  # ריענון הדף אחרי השינוי
+                    st.markdown("<span class='not-clicked-link'>לא נלחץ</span>", unsafe_allow_html=True)
